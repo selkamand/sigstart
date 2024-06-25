@@ -1,0 +1,57 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# sigstart
+
+<!-- badges: start -->
+[![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN status](https://www.r-pkg.org/badges/version/sigstart)](https://CRAN.R-project.org/package=sigstart)
+<!-- badges: end -->
+
+**Sigstart** reads small variants, copy number changes, and structural rearrangements from common bioinformatics file formats like VCFs and segment files. It converts these data into formats compatible with **sigminer** and other signature analysis tools.
+
+## Installation
+
+You can install the development version of sigstart from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("selkamand/sigstart")
+```
+
+## Quick Start
+
+```{r example}
+library(sigstart)
+
+# Convert SNVs and Indels from VCF -> MAF-like structure for sigminer
+path_vcf_snv <- system.file("somatics.vcf",package = "sigstart")
+parse_vcf_to_sigminer_maf(path_vcf_snv)
+
+# Convert Purple SVs from VCF -> BEDPE-like structure for sigminer
+path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
+parse_purple_sv_vcf_to_sigminer(path_vcf_sv)
+
+# Convert Purple SVs from VCF -> BEDPE structure for sigprofiler
+parse_purple_sv_vcf_to_sigprofiler(path_vcf_sv)
+
+# Convert Purple SVs from VCF -> BEDPE structure (identical output to above
+parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
+
+
+# Convert Purple CN Segment File -> Sigminer 
+#path_cn <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
+#parse_purple_segment_to_sigminer(path_vcf_sv)
+```
