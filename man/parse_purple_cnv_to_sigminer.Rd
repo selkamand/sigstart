@@ -15,7 +15,7 @@ parse_purple_cnv_to_sigminer(
 
 \item{sample_id}{string representing what the sample ID should be. Can be any valid string.}
 
-\item{ignore_gender}{should gen}
+\item{exclude_sex_chromosomes}{drop sex chromosomes from dataframe output}
 }
 \value{
 data.frame compatible with sigminer (containg the columns sample, chromosome, start, end, segVal, and minor_cn)

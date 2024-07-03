@@ -15,6 +15,7 @@ RoxygenNote: 7.3.1
 biocViews:
 Imports: 
     assertions,
+    cli,
     data.table,
     dplyr,
     plyranges,

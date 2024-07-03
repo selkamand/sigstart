@@ -223,7 +223,7 @@ parse_purple_sv_vcf_to_sigprofiler <- parse_purple_sv_vcf_to_bedpe
 #'
 #' @param segment path to segment file produced by purple (TUMOR.purple.cnv.somatic.tsv)
 #' @param sample_id string representing what the sample ID should be. Can be any valid string.
-#' @param ignore_gender should gen
+#' @param exclude_sex_chromosomes drop sex chromosomes from dataframe output
 #' @return data.frame compatible with sigminer (containg the columns sample, chromosome, start, end, segVal, and minor_cn)
 #' @export
 #'
