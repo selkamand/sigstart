@@ -53,3 +53,21 @@ test_that("parse_purple_sv_vcf_to_sigminer works correctly", {
   expect_true(all(c("Sample", "chr1", "start1", "end1", "chr2", "start2", "end2", "strand1", "strand2", "svclass") %in% colnames(sigminer)))
   expect_equal(sigminer$Sample[1], sample_id)
 })
+
+
+test_that("parse_purple_cnv_to_sigminer works correctly", {
+  path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+
+  sample_id = "bobby"
+  expect_error(parse_purple_cnv_to_sigminer(path_cn, sample_id = sample_id), NA)
+  sigminer <- parse_purple_cnv_to_sigminer(path_cn, sample_id = sample_id)
+
+  expect_true(is.data.frame(sigminer))
+  expect_true(all(c("sample", "Chromosome", "Start.bp", "End.bp", "modal_cn", "minor_cn") %in% colnames(sigminer)))
+  expect_equal(sigminer$sample[1], sample_id)
+
+  # Doesnt include sex chromosomes
+  expect_true(!any(c("chrX", "chrY") %in% sigminer[["Chromosome"]]))
+
+})
+

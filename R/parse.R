@@ -219,6 +219,54 @@ parse_purple_sv_vcf_to_sigprofiler <- parse_purple_sv_vcf_to_bedpe
 
 
 
+#' Parse CNVs to sigminer format
+#'
+#' @param segment path to segment file produced by purple (TUMOR.purple.cnv.somatic.tsv)
+#' @param sample_id string representing what the sample ID should be. Can be any valid string.
+#' @param ignore_gender should gen
+#' @return data.frame compatible with sigminer (containg the columns sample, chromosome, start, end, segVal, and minor_cn)
+#' @export
+#'
+parse_purple_cnv_to_sigminer <- function(segment, sample_id = "Sample", exclude_sex_chromosomes = TRUE){
+
+  # Gendder
+  if(!exclude_sex_chromosomes){
+   cli::cli_abort("We do not recommend including taking sex chromosomes into account when examining copynumber signatures. Please set {.arg exclude_sex_chromosomes} argument of sigstarts {.code parse_purple_cnv_to_sigminer()} function to TRUE to automatically filter them out")
+  }
+  # Assertions
+  assertions::assert_file_exists(segment)
+  assertions::assert_string(sample_id)
+
+  # Read File
+  df_segment <- utils::read.csv(file = segment, header = TRUE, sep = "\t")
+
+  # Rename and Add Columns
+  df_segment <- rename(df_segment, c(Chromosome = "chromosome", modal_cn = "copyNumber", Start.bp = "start", End.bp = "end", minor_cn = "minorAlleleCopyNumber"))
+  df_segment[["sample"]] <- sample_id
+
+  # Select just the columns sigminer needs
+  df_sigminer <- df_segment[c("sample", "Chromosome", "Start.bp", "End.bp", "modal_cn", "minor_cn")]
+
+  if(exclude_sex_chromosomes){
+    df_sigminer <- df_sigminer[!is_sex_chromosome(df_sigminer$Chromosome), ]
+  }
+
+  return(df_sigminer)
+}
+
+
+is_sex_chromosome <- function(chr, verbose = FALSE){
+  chrom_prefixes <- c("chr", "Chr", "CHR","chrom", "CHROM", "")
+  sex_chromosomes <- c("x", "X", "y", "Y")
+  df_chroms <- expand.grid(chrom_prefixes, sex_chromosomes)
+  potential_sex_chroms <- paste0(df_chroms[[1]], df_chroms[[2]])
+
+  if(verbose){
+   message("Checking for potential sex chromosomes: ", paste0(potential_sex_chroms, collapse = ", "))
+  }
+  chr %in% potential_sex_chroms
+}
+
 relocate <- function(df, cols){
   df[c(cols, setdiff(colnames(df), cols))]
 }
