@@ -32,9 +32,14 @@ devtools::install_github("selkamand/sigstart")
 ``` r
 library(sigstart)
 
-# Convert SNVs and Indels from VCF -> MAF-like structure for sigminer
-path_vcf_snv <- system.file("somatics.vcf",package = "sigstart")
-sigminer_maf_like_dataframe <- parse_vcf_to_sigminer_maf(path_vcf_snv)
+# Convert SNVs and Indels from a tumor-normal VCF -> MAF-like structure for sigminer
+path_vcf_snv <- system.file("tumor_normal.purple.somatic.vcf.gz",package = "sigstart")
+sigminer_maf_like_dataframe <- parse_vcf_to_sigminer_maf(path_vcf_snv, sample_id = "tumor_sample")
+#> ℹ Found 2 samples described in the VCF [normal_sample and tumor_sample]
+#> ℹ Returning data for only sample [tumor_sample] samples in format column of VCF.
+```
+
+``` r
 
 # Convert Purple SVs from VCF -> BEDPE-like structure for sigminer
 path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
@@ -45,7 +50,6 @@ bedpe_dataframe <- parse_purple_sv_vcf_to_sigprofiler(path_vcf_sv)
 
 # Convert Purple SVs from VCF -> BEDPE structure (identical output to above)
 bedpe_dataframe <- parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
-
 
 # Convert Purple CN Segment File -> Sigminer 
 path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")

@@ -55,9 +55,17 @@ fix_alleles <- function(ref, alt) {
 #' This function reads a VCF file and converts it into a MAF-like structure compatible with Sigminer.
 #' The conversion process includes renaming columns, filtering based on the FILTER field, and standardizing
 #' allele representations.
+#' The VCF file must be either a 1-sample tumor-only VCF or a 2-sample tumor-normal VCF.
+#' If a 2-sample VCF is supplied, you must indicate which is the tumour sample using the\code{sample_id} argument.
+#' Note this function assumes every mutation in the VCF relates to the \code{sample_id} supplied.
+#' (If the VCF includes homozygous ref alleles for your sample of interest please filter these upstream)
 #'
 #' @param vcf_snv A character string specifying the path to the VCF file.
 #' @param pass_only A logical value indicating whether to filter variants to include only those with a "PASS" filter status. Default is TRUE.
+#' @param sample_id  string representing the tumour sample identifier should be.
+#' This is required if you supply a 2-sample tumour normal VCF.
+#' Must be one of the samples described in the VCF.
+#'
 #' @return A data.frame with the MAF-like structure, ready for use with Sigminer.
 #' @export
 #'
@@ -65,10 +73,40 @@ fix_alleles <- function(ref, alt) {
 #' # Convert SNVs and Indels from VCF -> MAF-like structure for Sigminer
 #' path_vcf_snv <- system.file("somatics.vcf", package = "sigstart")
 #' parse_vcf_to_sigminer_maf(path_vcf_snv)
-parse_vcf_to_sigminer_maf <- function(vcf_snv, pass_only = TRUE){
+parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRUE, verbose = TRUE){
 
   vcf <- vcfR::read.vcfR(vcf_snv, verbose = FALSE)
+  samples <- colnames(vcf@gt)[-1]
+  nsamples <- length(samples)
+
+  if(verbose) cli::cli_alert_info("Found {nsamples} samples described in the VCF [{samples}]")
+
+  # Ensure VCF is a 2-sample tumour-normal or 1-sample tumor only
+  assertions::assert(nsamples <= 2, msg = "{.code parse_vcf_to_sigminer_maf} does not currently support VCFs with > 2 samples [{nsamples} samples were found]. We expect either 1-sample tumor-only VCFs or 2-sample tumour-normal VCFs (the latter requires tumor sample ID is specified by user supplying the {.arg sample_id} argument.")
+
+  # If VSC is a 2-sample tumour-normal, ensure sample_id is specified (so we can pull out just the tumour)
+  if(nsamples > 1 & is.null(sample_id)){
+    cli::cli_abort("VCF contains multiple samples, but {.arg sample_id} has not been supplied to indicate which is the tumor sample")
+  }
+
+  # Filter VCF to describe only the tumour sample
+  if(!is.null(sample_id)){
+    assertions::assert_string(sample_id)
+    assertions::assert_subset(sample_id, samples)
+
+    if(verbose) cli::cli_alert_info("Returning data for only sample [{sample_id}] samples in format column of VCF.")
+
+    vcf <- vcf[sample = sample_id]
+  }
+
+
+  if(nsamples == 0){
+    cli::cli_abort("No samples could be found in the VCF {.path {vcf_snv}}. We do not currently support VCFs where genotype columns are missing")
+  }
+
   df_vcf <- vcfR::vcfR2tidy(vcf, verbose=FALSE, single_frame = TRUE,toss_INFO_column = TRUE)[["dat"]]
+
+
 
   if(pass_only)
     df_vcf <- dplyr::filter(df_vcf, FILTER == "PASS")
@@ -134,6 +172,11 @@ parse_vcf_to_sigminer_maf <- function(vcf_snv, pass_only = TRUE){
     Ref_Length > Alt_Length, "DEL",
     TRUE, stop("non-explicitly handled mutation type")
   )]
+
+  if("gt_GT" %in% colnames(dt_maf)){
+    n_hom_ref_variants <- sum(dt_maf[["gt_GT"]] == "0/0")
+    assertions::assert(n_hom_ref_variants == 0, msg = "Resulting MAF includes [{n_hom_ref_variants}] variants whose genotype are 0/0 (homozygous ref). Are you sure you've supplied an appropriate VCF file and {.arg sample_id} is truly a tumour sample?")
+  }
 
   return(dt_maf)
 }

@@ -4,10 +4,19 @@
 \alias{parse_vcf_to_sigminer_maf}
 \title{Convert VCFs into Sigminer-compatible MAF object}
 \usage{
-parse_vcf_to_sigminer_maf(vcf_snv, pass_only = TRUE)
+parse_vcf_to_sigminer_maf(
+  vcf_snv,
+  sample_id = NULL,
+  pass_only = TRUE,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{vcf_snv}{A character string specifying the path to the VCF file.}
+
+\item{sample_id}{string representing the tumour sample identifier should be.
+This is required if you supply a 2-sample tumour normal VCF.
+Must be one of the samples described in the VCF.}
 
 \item{pass_only}{A logical value indicating whether to filter variants to include only those with a "PASS" filter status. Default is TRUE.}
 }
@@ -18,6 +27,10 @@ A data.frame with the MAF-like structure, ready for use with Sigminer.
 This function reads a VCF file and converts it into a MAF-like structure compatible with Sigminer.
 The conversion process includes renaming columns, filtering based on the FILTER field, and standardizing
 allele representations.
+The VCF file must be either a 1-sample tumor-only VCF or a 2-sample tumor-normal VCF.
+If a 2-sample VCF is supplied, you must indicate which is the tumour sample using the\code{sample_id} argument.
+Note this function assumes every mutation in the VCF relates to the \code{sample_id} supplied.
+(If the VCF includes homozygous ref alleles for your sample of interest please filter these upstream)
 }
 \examples{
 # Convert SNVs and Indels from VCF -> MAF-like structure for Sigminer
