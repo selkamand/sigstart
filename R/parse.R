@@ -65,7 +65,9 @@ fix_alleles <- function(ref, alt) {
 #' @param sample_id  string representing the tumour sample identifier should be.
 #' This is required if you supply a 2-sample tumour normal VCF.
 #' Must be one of the samples described in the VCF.
-#'
+#' @param allow_multisample Do NOT throw an error for VCFs with >2 samples.
+#' Added since some tumor-normal pipelines add a third sample describing RNA genotypes of mutations found in DNA and these 3-sample VCFs would fail purely because they have 3 samples present.
+#' Whether TRUE/FALSE, this function still assumes every mutation in the VCF relates to the \code{sample_id} supplied, so please exclude any homozygous ref alleles for your sample of interest upstream.
 #' @return A data.frame with the MAF-like structure, ready for use with Sigminer.
 #' @export
 #'
@@ -73,7 +75,7 @@ fix_alleles <- function(ref, alt) {
 #' # Convert SNVs and Indels from VCF -> MAF-like structure for Sigminer
 #' path_vcf_snv <- system.file("somatics.vcf", package = "sigstart")
 #' parse_vcf_to_sigminer_maf(path_vcf_snv)
-parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRUE, verbose = TRUE){
+parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRUE, allow_multisample = FALSE, verbose = TRUE){
 
   vcf <- vcfR::read.vcfR(vcf_snv, verbose = FALSE)
   samples <- colnames(vcf@gt)[-1]
@@ -82,7 +84,9 @@ parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRU
   if(verbose) cli::cli_alert_info("Found {nsamples} samples described in the VCF [{samples}]")
 
   # Ensure VCF is a 2-sample tumour-normal or 1-sample tumor only
-  assertions::assert(nsamples <= 2, msg = "{.code parse_vcf_to_sigminer_maf} does not currently support VCFs with > 2 samples [{nsamples} samples were found]. We expect either 1-sample tumor-only VCFs or 2-sample tumour-normal VCFs (the latter requires tumor sample ID is specified by user supplying the {.arg sample_id} argument.")
+  if(!allow_multisample){
+    assertions::assert(nsamples <= 2, msg = "{.code parse_vcf_to_sigminer_maf} does not currently support VCFs with > 2 samples [{nsamples} samples were found]. We expect either 1-sample tumor-only VCFs or 2-sample tumour-normal VCFs (the latter requires tumor sample ID is specified by user supplying the {.arg sample_id} argument.")
+  }
 
   # If VSC is a 2-sample tumour-normal, ensure sample_id is specified (so we can pull out just the tumour)
   if(nsamples > 1 & is.null(sample_id)){

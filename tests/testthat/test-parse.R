@@ -52,6 +52,21 @@ test_that("parse_vcf_to_sigminer_maf works correctly with tumor_normal samples",
   expect_equal(nrow(df_maf), 2827)
 })
 
+test_that("parse_vcf_to_sigminer_maf works correctly with tumor_normal samples", {
+  path_vcf <- system.file("tumor_normal_rna.purple.somatic.vcf.gz", package = "sigstart")
+
+  expect_error(parse_vcf_to_sigminer_maf(path_vcf, pass_only = TRUE, allow_multisample = TRUE, verbose=FALSE), "VCF contains multiple samples, but `sample_id` has not been supplied")
+  expect_error(parse_vcf_to_sigminer_maf(path_vcf, pass_only = TRUE, allow_multisample = TRUE, verbose=FALSE, sample_id = "normal_sample"), "Resulting MAF includes .* variants whose genotype are 0/0")
+  expect_error(parse_vcf_to_sigminer_maf(path_vcf, pass_only = TRUE, allow_multisample = TRUE, verbose=FALSE, sample_id = "made_up_sample"), "Valid values include: normal_sample, tumor_sample, and rna_sample")
+  expect_error(parse_vcf_to_sigminer_maf(path_vcf, pass_only = TRUE, allow_multisample = TRUE, verbose=FALSE, sample_id = "tumor_sample"), NA)
+
+  df_maf <- parse_vcf_to_sigminer_maf(path_vcf, pass_only = TRUE, allow_multisample = TRUE, verbose=FALSE, sample_id = "tumor_sample")
+
+
+  expect_true(is.data.frame(df_maf))
+  expect_true(all(c("Chromosome", "Tumor_Sample_Barcode", "Reference_Allele", "Tumor_Seq_Allele2", "Start_Position", "End_Position", "Variant_Type") %in% colnames(df_maf)))
+  expect_equal(nrow(df_maf), 2827)
+})
 
 test_that("parse_purple_sv_vcf_to_bedpe works correctly", {
   path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
