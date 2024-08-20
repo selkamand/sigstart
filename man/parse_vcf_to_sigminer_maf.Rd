@@ -24,6 +24,8 @@ Must be one of the samples described in the VCF.}
 \item{allow_multisample}{Do NOT throw an error for VCFs with >2 samples.
 Added since some tumor-normal pipelines add a third sample describing RNA genotypes of mutations found in DNA and these 3-sample VCFs would fail purely because they have 3 samples present.
 Whether TRUE/FALSE, this function still assumes every mutation in the VCF relates to the \code{sample_id} supplied, so please exclude any homozygous ref alleles for your sample of interest upstream.}
+
+\item{verbose}{verbose (flag)}
 }
 \value{
 A data.frame with the MAF-like structure, ready for use with Sigminer.
