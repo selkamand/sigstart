@@ -1,0 +1,78 @@
+#' Convert MAF-like File to Single Sample VCFs
+#'
+#' This function takes a path to a MAF-like file and creates a collection of single-sample VCFs.
+#' Note that this is **NOT** a lossless operation. Only the most basic chromosome/position/reference/alternate allele information is kept to ensure VCFs are extremely simple.
+#' Also, no filtering is applied to the MAF—every variant in your MAF will be saved in the VCFs.
+#'
+#' @param path Path to the MAF file (string).
+#' @param outdir Output directory where VCF files will be saved (string).
+#' @param col_sample Name of the column describing the sample containing the mutation (string).
+#' @param col_chrom Name of the column describing the chromosome of the mutation (string).
+#' @param col_start_position Name of the column describing the start position of the mutation (string).
+#' @param col_end_position Name of the column describing the end position of the mutation (string).
+#' @param col_ref Name of the column describing the reference allele (string).
+#' @param col_alt Name of the column describing the alternate allele (string).
+#' @return None. Creates VCF files in the specified output directory.
+#' @export
+#'
+#' @examples
+#' path_maf <- system.file(package = "sigstart", "pcawg.3sample.snvs_indel.maf")
+#' convert_maf_to_vcfs(path_maf, outdir = "vcfs")
+convert_maf_to_vcfs <- function(path, outdir = "vcfs",
+                                col_sample = "Tumor_Sample_Barcode",
+                                col_chrom = "Chromosome",
+                                col_start_position = "Start_Position",
+                                col_end_position = "End_Position",
+                                col_ref = "Reference_Allele",
+                                col_alt = "Tumor_Seq_Allele2"
+){
+
+  # Assertions
+  assertions::assert_directory_does_not_exist(outdir, msg = "Directory {.path {outdir}} already exists. Please remove then try again")
+  assertions::assert_file_exists(path)
+
+  # Read MAF
+  df_maf <- data.table::fread(path)
+
+  # Ensure We Have all the right columns
+  assertions::assert_names_include(df_maf, c(col_sample,  col_chrom, col_start_position, col_end_position, col_ref, col_alt))
+
+  # Count Samples
+  samples <- unique(df_maf[[col_sample]])
+  nsamples <- length(samples)
+
+  cli::cli_alert_info("Found a total of {nsamples} samples in the MAF file")
+
+  ls_maf <- split(df_maf, df_maf[[col_sample]])
+
+  # Create output directory
+  dir.create(outdir)
+
+  progress_bar = utils::txtProgressBar(min=0, max=nsamples, style = 3, char="=")
+  i=0
+  for (sample in names(ls_maf)){
+    i <- i + 1
+    setTxtProgressBar(progress_bar, value=i, title = NULL, label = NULL)
+    outfile = paste0(outdir, "/", sample, ".snv_indel.vcf")
+    file.create(outfile)
+    df_ss_maf <- ls_maf[[sample]]
+    df_vcf <- data.frame(
+      CHROM = df_ss_maf[[col_chrom]],
+      POS = df_ss_maf[[col_start_position]],
+      ID = ".",
+      REF = df_ss_maf[[col_ref]],
+      ALT = df_ss_maf[[col_alt]],
+      QUAL = ".",
+      FITLER = ".",
+      INFO = "."
+    )
+    write("##fileformat=VCFv4.2", file = outfile, append = FALSE)
+    write(paste0("##sample=", sample), file = outfile, append = TRUE)
+    write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", file = outfile, append = TRUE)
+    write.table(df_vcf, col.names = FALSE, row.names = FALSE,sep = "\t", file = outfile, append = TRUE, quote = FALSE)
+  }
+
+}
+
+
+

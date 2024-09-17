@@ -55,3 +55,18 @@ bedpe_dataframe <- parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
 path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
 sigminer_cn_dataframe <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
 ```
+
+## Converting a cohort MAF to single sample VCFs
+
+Signature analysis tools including sigscreen and signal are easier to
+run from single sample VCFs than cohort-MAFs. The convert_maf_to_vcfs
+function splits a cohort MAF file into a collection of minimal single
+sample vcfs.
+
+``` r
+library(sigstart)
+path_maf <- system.file(package = "sigstart", "pcawg.3sample.snvs_indel.maf")
+convert_maf_to_vcfs(path_maf, outdir = "vcfs")
+#> ℹ Found a total of 3 samples in the MAF file
+#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
+```
