@@ -27,6 +27,8 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
                                 col_alt = "Tumor_Seq_Allele2"
 ){
 
+  requireNamespace("Rsamtools", quietly = TRUE)
+
   # Assertions
   assertions::assert_directory_does_not_exist(outdir, msg = "Directory {.path {outdir}} already exists. Please remove then try again")
   assertions::assert_file_exists(path)
@@ -52,7 +54,7 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
   i=0
   for (sample in names(ls_maf)){
     i <- i + 1
-    setTxtProgressBar(progress_bar, value=i, title = NULL, label = NULL)
+    utils::setTxtProgressBar(progress_bar, value=i, title = NULL, label = NULL)
     outfile = paste0(outdir, "/", sample, ".snv_indel.vcf")
     file.create(outfile)
     df_ss_maf <- ls_maf[[sample]]
@@ -69,7 +71,11 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
     write("##fileformat=VCFv4.2", file = outfile, append = FALSE)
     write(paste0("##sample=", sample), file = outfile, append = TRUE)
     write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO", file = outfile, append = TRUE)
-    write.table(df_vcf, col.names = FALSE, row.names = FALSE,sep = "\t", file = outfile, append = TRUE, quote = FALSE)
+    utils::write.table(df_vcf, col.names = FALSE, row.names = FALSE,sep = "\t", file = outfile, append = TRUE, quote = FALSE)
+
+    # Compress with bgzip
+    Rsamtools::bgzip(file = outfile)
+    file.remove(outfile)
   }
 
 }
