@@ -33,11 +33,14 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
   assertions::assert_directory_does_not_exist(outdir, msg = "Directory {.path {outdir}} already exists. Please remove then try again")
   assertions::assert_file_exists(path)
 
-  # Read MAF
-  df_maf <- data.table::fread(path)
+  # Read MAF (first 10 lines only)
+  df_maf <- data.table::fread(path, nrows = 5)
 
   # Ensure We Have all the right columns
   assertions::assert_names_include(df_maf, c(col_sample,  col_chrom, col_start_position, col_end_position, col_ref, col_alt))
+
+  # If the maf has all the right column names, read the full MAF
+  df_maf <- data.table::fread(path)
 
   # Count Samples
   samples <- unique(df_maf[[col_sample]])
