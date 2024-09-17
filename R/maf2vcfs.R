@@ -51,7 +51,7 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
   ls_maf <- split(df_maf, df_maf[[col_sample]])
 
   # Create output directory
-  dir.create(outdir)
+  dir.create(outdir, recursive = TRUE)
 
   progress_bar = utils::txtProgressBar(min=0, max=nsamples, style = 3, char="=")
   i=0
