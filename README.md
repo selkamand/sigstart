@@ -94,11 +94,7 @@ convert_maf_to_vcfs(
 
 # Parse the vcfs 
 # (no need to specify a sample ID since these are single sample VCFs)
-maf <- parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.bgz")
-#> ℹ Found 1 samples described in the VCF [DO1000]
-```
-
-``` r
+maf <- parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.bgz", verbose = FALSE)
 head(maf)
 #>    Chromosome Position_1based     ID Reference_Allele Tumor_Seq_Allele2  QUAL
 #>        <char>           <num> <char>           <char>            <char> <num>
