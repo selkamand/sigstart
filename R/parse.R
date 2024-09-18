@@ -150,7 +150,7 @@ parse_vcf_to_sigminer_maf <- function(
   )]
 
   if("gt_GT" %in% colnames(dt_maf)){
-    n_hom_ref_variants <- sum(na.omit(dt_maf[["gt_GT"]]) == "0/0")
+    n_hom_ref_variants <- sum(stats::na.omit(dt_maf[["gt_GT"]]) == "0/0")
     assertions::assert(n_hom_ref_variants == 0, msg = "Resulting MAF includes [{n_hom_ref_variants}] variants whose genotype are 0/0 (homozygous ref). Are you sure you've supplied an appropriate VCF file and {.arg sample_id} is truly a tumour sample?")
   }
 
