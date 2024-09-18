@@ -4,4 +4,6 @@
 ^README\.Rmd$
 ^cran-comments\.md$
 ^\.github$
-^vcfs
+^single_sample_files$
+^vcfs$
+COLO829v003T.purple.somatic.vcf.gz

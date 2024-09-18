@@ -3,7 +3,7 @@
 .Rapp.history
 
 # Other
-vcfs/
+single_sample_files/
 
 # Session Data files
 .RData
