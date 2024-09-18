@@ -19,10 +19,13 @@ test_that("convert_maf_to_vcfs works correctly with valid input", {
 
   # Snapshot test: For each VCF file, compare its content to a stored snapshot
   for (vcf_file in vcf_files) {
-    # expect_snapshot_file(vcf_file, name = basename(vcf_file), cran = FALSE)
-    sampleid = sub(x=basename(vcf_file), pattern = "\\..*$", "")
-    expect_no_error(parse_vcf_to_sigminer_maf(vcf_file, verbose = FALSE))
+    # Snapshot
     expect_snapshot_file(vcf_file)
+
+    # Parse MAF
+    df_maf <- expect_no_error(parse_vcf_to_sigminer_maf(vcf_file, verbose = FALSE))
+    expect_true(nrow(df_maf) > 0)
+    expect_snapshot(df_maf)
   }
 })
 

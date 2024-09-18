@@ -1,3 +1,138 @@
+# convert_maf_to_vcfs works correctly with valid input
+
+    Code
+      df_maf
+    Output
+            Chromosome Position_1based     ID Reference_Allele Tumor_Seq_Allele2
+                <char>           <num> <char>           <char>            <char>
+         1:          1         2112413      1                T                 C
+         2:          1         2927666      2                A                 G
+         3:          1         2959093      3                C                 A
+         4:          1         3359791      4                C                 T
+         5:          1         4961889      5                G                 C
+        ---                                                                     
+      2248:          X       151052944   2139                C                 A
+      2249:          X       151366329   2140                A                 G
+      2250:          X       151397455   2141                T                 C
+      2251:          X       153748614   2142                G                 A
+      2252:          X       154961246   2143                C                 A
+             QUAL FILTER Tumor_Sample_Barcode  gt_GT gt_GT_alleles Ref_Length
+            <num> <char>               <char> <char>        <char>      <num>
+         1:    NA   <NA>               DO1000   <NA>          <NA>          1
+         2:    NA   <NA>               DO1000   <NA>          <NA>          1
+         3:    NA   <NA>               DO1000   <NA>          <NA>          1
+         4:    NA   <NA>               DO1000   <NA>          <NA>          1
+         5:    NA   <NA>               DO1000   <NA>          <NA>          1
+        ---                                                                  
+      2248:    NA   <NA>               DO1000   <NA>          <NA>          1
+      2249:    NA   <NA>               DO1000   <NA>          <NA>          1
+      2250:    NA   <NA>               DO1000   <NA>          <NA>          1
+      2251:    NA   <NA>               DO1000   <NA>          <NA>          1
+      2252:    NA   <NA>               DO1000   <NA>          <NA>          1
+            Alt_Length Start_Position End_Position Inframe Variant_Type
+                 <num>          <num>        <num>  <lgcl>       <char>
+         1:          1        2112413      2112413    TRUE          SNP
+         2:          1        2927666      2927666    TRUE          SNP
+         3:          1        2959093      2959093    TRUE          SNP
+         4:          1        3359791      3359791    TRUE          SNP
+         5:          1        4961889      4961889    TRUE          SNP
+        ---                                                            
+      2248:          1      151052944    151052944    TRUE          SNP
+      2249:          1      151366329    151366329    TRUE          SNP
+      2250:          1      151397455    151397455    TRUE          SNP
+      2251:          1      153748614    153748614    TRUE          SNP
+      2252:          1      154961246    154961246    TRUE          SNP
+
+---
+
+    Code
+      df_maf
+    Output
+            Chromosome Position_1based     ID Reference_Allele Tumor_Seq_Allele2
+                <char>           <num> <char>           <char>            <char>
+         1:          1         2966961      1                G                 C
+         2:          1         3149852      2                G                 T
+         3:          1         3758600      3                C                 A
+         4:          1         3759189      4                A                 G
+         5:          1         4096612      5                A                 C
+        ---                                                                     
+      6520:          X       151325277   6139                A                 T
+      6521:          X       152039817   6140                T                 C
+      6522:          X       152660208   6141                G                 T
+      6523:          X       153606109   6142                C                 G
+      6524:          X       153953411   6143                C                 A
+             QUAL FILTER Tumor_Sample_Barcode  gt_GT gt_GT_alleles Ref_Length
+            <num> <char>               <char> <char>        <char>      <num>
+         1:    NA   <NA>               DO1001   <NA>          <NA>          1
+         2:    NA   <NA>               DO1001   <NA>          <NA>          1
+         3:    NA   <NA>               DO1001   <NA>          <NA>          1
+         4:    NA   <NA>               DO1001   <NA>          <NA>          1
+         5:    NA   <NA>               DO1001   <NA>          <NA>          1
+        ---                                                                  
+      6520:    NA   <NA>               DO1001   <NA>          <NA>          1
+      6521:    NA   <NA>               DO1001   <NA>          <NA>          1
+      6522:    NA   <NA>               DO1001   <NA>          <NA>          1
+      6523:    NA   <NA>               DO1001   <NA>          <NA>          1
+      6524:    NA   <NA>               DO1001   <NA>          <NA>          1
+            Alt_Length Start_Position End_Position Inframe Variant_Type
+                 <num>          <num>        <num>  <lgcl>       <char>
+         1:          1        2966961      2966961    TRUE          SNP
+         2:          1        3149852      3149852    TRUE          SNP
+         3:          1        3758600      3758600    TRUE          SNP
+         4:          1        3759189      3759189    TRUE          SNP
+         5:          1        4096612      4096612    TRUE          SNP
+        ---                                                            
+      6520:          1      151325277    151325277    TRUE          SNP
+      6521:          1      152039817    152039817    TRUE          SNP
+      6522:          1      152660208    152660208    TRUE          SNP
+      6523:          1      153606109    153606109    TRUE          SNP
+      6524:          1      153953411    153953411    TRUE          SNP
+
+---
+
+    Code
+      df_maf
+    Output
+            Chromosome Position_1based     ID Reference_Allele Tumor_Seq_Allele2
+                <char>           <num> <char>           <char>            <char>
+         1:          1         2541985      1                C                 A
+         2:          1         2805412      2                T                 C
+         3:          1         2873010      3                C                 G
+         4:          1         3267991      4                C                 T
+         5:          1         3276564   5981       AAACGTAATT                 -
+        ---                                                                     
+      6759:          X       154352809   5976                G                 C
+      6760:          X       154893175   5977                G                 C
+      6761:          X       154991469   5978                T                 C
+      6762:          X       155198582   5979               TC                CA
+      6763:          X       155233122   5980                T                 A
+             QUAL FILTER Tumor_Sample_Barcode  gt_GT gt_GT_alleles Ref_Length
+            <num> <char>               <char> <char>        <char>      <num>
+         1:    NA   <NA>               DO1002   <NA>          <NA>          1
+         2:    NA   <NA>               DO1002   <NA>          <NA>          1
+         3:    NA   <NA>               DO1002   <NA>          <NA>          1
+         4:    NA   <NA>               DO1002   <NA>          <NA>          1
+         5:    NA   <NA>               DO1002   <NA>          <NA>         10
+        ---                                                                  
+      6759:    NA   <NA>               DO1002   <NA>          <NA>          1
+      6760:    NA   <NA>               DO1002   <NA>          <NA>          1
+      6761:    NA   <NA>               DO1002   <NA>          <NA>          1
+      6762:    NA   <NA>               DO1002   <NA>          <NA>          2
+      6763:    NA   <NA>               DO1002   <NA>          <NA>          1
+            Alt_Length Start_Position End_Position Inframe Variant_Type
+                 <num>          <num>        <num>  <lgcl>       <char>
+         1:          1        2541985      2541985    TRUE          SNP
+         2:          1        2805412      2805412    TRUE          SNP
+         3:          1        2873010      2873010    TRUE          SNP
+         4:          1        3267991      3267991    TRUE          SNP
+         5:          1        3276564      3276573    TRUE          DEL
+        ---                                                            
+      6759:          1      154352809    154352809    TRUE          SNP
+      6760:          1      154893175    154893175    TRUE          SNP
+      6761:          1      154991469    154991469    TRUE          SNP
+      6762:          2      155198582    155198583    TRUE          DNP
+      6763:          1      155233122    155233122    TRUE          SNP
+
 # convert_cohort_segment_file_to_single_samples works correctly with valid input
 
     Code

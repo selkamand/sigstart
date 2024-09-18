@@ -7,7 +7,7 @@
 parse_vcf_to_sigminer_maf(
   vcf_snv,
   sample_id = NULL,
-  pass_only = TRUE,
+  include = c("pass", "pass_strict", "all"),
   allow_multisample = FALSE,
   verbose = TRUE
 )
@@ -19,7 +19,12 @@ parse_vcf_to_sigminer_maf(
 This is required if you supply a 2-sample tumour normal VCF.
 Must be one of the samples described in the VCF.}
 
-\item{pass_only}{A logical value indicating whether to filter variants to include only those with a "PASS" filter status. Default is TRUE.}
+\item{include}{Which variants to include in the final data.frame. Valid values include:
+\itemize{
+\item \strong{pass}: FILTER column is \code{PASS} or \code{.}.
+\item \strong{pass_strict}: FILTER column is \code{PASS}.
+\item \strong{all}: Include all variants in VCF regardless of FILTER status.
+}}
 
 \item{allow_multisample}{Do NOT throw an error for VCFs with >2 samples.
 Added since some tumor-normal pipelines add a third sample describing RNA genotypes of mutations found in DNA and these 3-sample VCFs would fail purely because they have 3 samples present.

@@ -100,7 +100,30 @@ maf <- parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.
 
 ``` r
 head(maf)
-#> Empty data.table (0 rows and 14 cols): Chromosome,Position_1based,ID,QUAL,FILTER,Tumor_Sample_Barcode...
+#>    Chromosome Position_1based     ID Reference_Allele Tumor_Seq_Allele2  QUAL
+#>        <char>           <num> <char>           <char>            <char> <num>
+#> 1:          1         2112413      1                T                 C    NA
+#> 2:          1         2927666      2                A                 G    NA
+#> 3:          1         2959093      3                C                 A    NA
+#> 4:          1         3359791      4                C                 T    NA
+#> 5:          1         4961889      5                G                 C    NA
+#> 6:          1         5949138      6                C                 T    NA
+#>    FILTER Tumor_Sample_Barcode  gt_GT gt_GT_alleles Ref_Length Alt_Length
+#>    <char>               <char> <char>        <char>      <num>      <num>
+#> 1:   <NA>               DO1000   <NA>          <NA>          1          1
+#> 2:   <NA>               DO1000   <NA>          <NA>          1          1
+#> 3:   <NA>               DO1000   <NA>          <NA>          1          1
+#> 4:   <NA>               DO1000   <NA>          <NA>          1          1
+#> 5:   <NA>               DO1000   <NA>          <NA>          1          1
+#> 6:   <NA>               DO1000   <NA>          <NA>          1          1
+#>    Start_Position End_Position Inframe Variant_Type
+#>             <num>        <num>  <lgcl>       <char>
+#> 1:        2112413      2112413    TRUE          SNP
+#> 2:        2927666      2927666    TRUE          SNP
+#> 3:        2959093      2959093    TRUE          SNP
+#> 4:        3359791      3359791    TRUE          SNP
+#> 5:        4961889      4961889    TRUE          SNP
+#> 6:        5949138      5949138    TRUE          SNP
 ```
 
 ### Converting cohort copynumber calls into single sample segment VCFs

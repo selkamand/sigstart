@@ -13,7 +13,12 @@ utils::globalVariables(c("Alt_Length", "FILTER", "Position_1based", "Ref_Length"
 #' (If the VCF includes homozygous ref alleles for your sample of interest please filter these upstream)
 #'
 #' @param vcf_snv A character string specifying the path to the VCF file.
-#' @param pass_only A logical value indicating whether to filter variants to include only those with a "PASS" filter status. Default is TRUE.
+#' @param include Which variants to include in the final data.frame. Valid values include:
+#'   \itemize{
+#'     \item \strong{pass}: FILTER column is `PASS` or `.`.
+#'     \item \strong{pass_strict}: FILTER column is `PASS`.
+#'     \item \strong{all}: Include all variants in VCF regardless of FILTER status.
+#'   }
 #' @param sample_id  string representing the tumour sample identifier should be.
 #' This is required if you supply a 2-sample tumour normal VCF.
 #' Must be one of the samples described in the VCF.
@@ -28,8 +33,15 @@ utils::globalVariables(c("Alt_Length", "FILTER", "Position_1based", "Ref_Length"
 #' # Convert SNVs and Indels from VCF -> MAF-like structure for Sigminer
 #' path_vcf_snv <- system.file("somatics.vcf", package = "sigstart")
 #' parse_vcf_to_sigminer_maf(path_vcf_snv)
-parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRUE, allow_multisample = FALSE, verbose = TRUE){
+parse_vcf_to_sigminer_maf <- function(
+    vcf_snv,
+    sample_id = NULL,
+    include = c("pass", "pass_strict", "all"),
+    allow_multisample = FALSE,
+    verbose = TRUE
+  ){
   assertions::assert_file_exists(vcf_snv)
+  include <- rlang::arg_match(include)
 
   vcf <- vcfR::read.vcfR(vcf_snv, verbose = FALSE)
   samples <- colnames(vcf@gt)[-1]
@@ -64,9 +76,17 @@ parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRU
 
   df_vcf <- vcfR::vcfR2tidy(vcf, verbose=FALSE, single_frame = TRUE,toss_INFO_column = TRUE)[["dat"]]
 
-  if(pass_only)
+  if(include == "pass")
+    # Include FILTER = PASS / missing (e.g. `.`)
+    # Note that vcfR parses '.' to NA_character
+    df_vcf <- dplyr::filter(df_vcf, FILTER %in% c("PASS", ".", NA_character_))
+  else if(include == "pass_strict")
     df_vcf <- dplyr::filter(df_vcf, FILTER == "PASS")
-  #return(vcf2mafR::df2maf(df_vcf, col_chrom = "CHROM", col_alt = "ALT", col_ref = "REF", col_sample_identifier = "Indiv"))
+  else if(include == "all") {
+    # Don't subset data at all
+  }
+  else
+    stop("`include` = [", include, "] is not supported. Please open an issue on github and include this error message")
 
   dt_maf <- data.table::data.table(df_vcf)
 
@@ -130,7 +150,7 @@ parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRU
   )]
 
   if("gt_GT" %in% colnames(dt_maf)){
-    n_hom_ref_variants <- sum(dt_maf[["gt_GT"]] == "0/0")
+    n_hom_ref_variants <- sum(na.omit(dt_maf[["gt_GT"]]) == "0/0")
     assertions::assert(n_hom_ref_variants == 0, msg = "Resulting MAF includes [{n_hom_ref_variants}] variants whose genotype are 0/0 (homozygous ref). Are you sure you've supplied an appropriate VCF file and {.arg sample_id} is truly a tumour sample?")
   }
 
