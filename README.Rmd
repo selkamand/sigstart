@@ -82,6 +82,9 @@ Signature analysis tools including sigscreen and signal are easier to run from s
 library(sigstart)
 path_maf <- system.file(package = "sigstart", "pcawg.3sample.snvs_indel.maf")
 convert_maf_to_vcfs(path_maf, outdir = "single_sample_files/vcfs")
+
+# Parse the vcfs (no need to specify a sample ID since these are single sample VCFS)
+parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.bgz")
 ```
 
 ### Converting cohort copynumber calls into single sample segment VCFs
@@ -89,5 +92,8 @@ convert_maf_to_vcfs(path_maf, outdir = "single_sample_files/vcfs")
 ```{r}
 path_copynumber <- system.file(package = "sigstart", "pcawg.3sample.copynumber.segment")
 convert_cohort_segment_file_to_single_samples(path_copynumber, outdir = "single_sample_files/cnvs")
+
+# Parse the copynumber file
+parse_cnv_to_sigminer("single_sample_files/cnvs/DO1000.copynumber.tsv.bgz", sample_id = "D01000")
 ```
 

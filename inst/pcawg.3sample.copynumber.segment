@@ -1,4 +1,4 @@
-sample	chromosome	start	end	value	copynumber	major_cn	minorAlleleCopyNumber	star
+sample	chromosome	start	end	value	copyNumber	major_cn	minorAlleleCopyNumber	star
 DO1002	1	1	790502	2	2	1	1	1
 DO1002	1	790503	10259869	2	2	1	1	2
 DO1002	1	10259870	10277500	3	3	2	1	2

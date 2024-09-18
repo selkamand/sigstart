@@ -30,6 +30,7 @@ utils::globalVariables(c("Alt_Length", "FILTER", "Position_1based", "Ref_Length"
 #' parse_vcf_to_sigminer_maf(path_vcf_snv)
 parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRUE, allow_multisample = FALSE, verbose = TRUE){
   assertions::assert_file_exists(vcf_snv)
+
   vcf <- vcfR::read.vcfR(vcf_snv, verbose = FALSE)
   samples <- colnames(vcf@gt)[-1]
   nsamples <- length(samples)
@@ -62,8 +63,6 @@ parse_vcf_to_sigminer_maf <- function(vcf_snv, sample_id = NULL, pass_only = TRU
   }
 
   df_vcf <- vcfR::vcfR2tidy(vcf, verbose=FALSE, single_frame = TRUE,toss_INFO_column = TRUE)[["dat"]]
-
-
 
   if(pass_only)
     df_vcf <- dplyr::filter(df_vcf, FILTER == "PASS")

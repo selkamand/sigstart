@@ -10,10 +10,11 @@ convert_cohort_segment_file_to_single_samples(
   col_chromosome = "chromosome",
   col_start = "start",
   col_end = "end",
-  col_copynumber = "copynumber",
+  col_copynumber = "copyNumber",
   col_minor_cn = "minorAlleleCopyNumber",
   outdir = "cnvs",
-  bgzip = TRUE
+  bgzip = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -34,6 +35,8 @@ convert_cohort_segment_file_to_single_samples(
 \item{outdir}{Output directory where single-sample segment files will be saved (string).}
 
 \item{bgzip}{should segment files be bgzipped?}
+
+\item{verbose}{verbose mode (flag)}
 }
 \value{
 Invisibly returns NULL. Creates single sample copynumber segment files in the specified output directory.

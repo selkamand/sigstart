@@ -13,7 +13,8 @@ convert_maf_to_vcfs(
   col_end_position = "End_Position",
   col_ref = "Reference_Allele",
   col_alt = "Tumor_Seq_Allele2",
-  bgzip = TRUE
+  bgzip = TRUE,
+  verbose = TRUE
 )
 }
 \arguments{
@@ -33,14 +34,21 @@ convert_maf_to_vcfs(
 
 \item{col_alt}{Name of the column describing the alternate allele (string).}
 
-\item{bgzip}{should segment files be bgzipped?}
+\item{bgzip}{compress and index vcf file (flag).}
+
+\item{verbose}{verbose mode (flag).}
 }
 \value{
 Invisibly returns NULL. Creates VCF files in the specified output directory.
 }
 \description{
 This function takes a path to a MAF-like file and creates a collection of single-sample VCFs.
-Note that this is \strong{NOT} a lossless operation. Only the most basic chromosome/position/reference/alternate allele information is kept to ensure VCFs are extremely simple.
+Note that this is \strong{NOT} a lossless operation.
+Only the most basic information is kept to ensure VCFs remain simple.
+FORMAT and sample columns are added with Genotypes 'missing' for all alleles to
+as this information is not automatically extracted from the MAF.
+}
+\details{
 Also, no filtering is applied to the MAF—every variant in your MAF will be saved in the VCFs.
 }
 \examples{
