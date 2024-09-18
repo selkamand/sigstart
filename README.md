@@ -54,9 +54,27 @@ bedpe_dataframe <- parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
 # Convert Purple CN Segment File -> Sigminer 
 path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
 sigminer_cn_dataframe <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
+
+# Convert CN Segment Files from other tools -> Sigminer
+# (by manually specifying the column name mappings)
+path_cn_notpurple <- system.file("pcawg.single_sample.copynumber.notpurple.segment", package = "sigstart")
+sigminer_cn_dataframe <- parse_cnv_to_sigminer(
+  path_cn_notpurple,
+  sample_id = "tumor_sample",
+  col_chromosome = "chr",
+  col_start = "start",
+  col_end = "end",
+  col_copynumber = "total_cn",
+  col_minor_cn = "minor_cn"
+)
 ```
 
-## Converting a cohort MAF to single sample VCFs
+## Cohort -\> Single Sample Files
+
+Signature analysis tools including sigscreen and signal are easier to
+run from single sample data files. Here we demonstrate how to create the
+
+### Converting cohort MAF to single sample VCFs
 
 Signature analysis tools including sigscreen and signal are easier to
 run from single sample VCFs than cohort-MAFs. The convert_maf_to_vcfs
@@ -66,7 +84,20 @@ sample vcfs.
 ``` r
 library(sigstart)
 path_maf <- system.file(package = "sigstart", "pcawg.3sample.snvs_indel.maf")
-convert_maf_to_vcfs(path_maf, outdir = "vcfs")
+convert_maf_to_vcfs(path_maf, outdir = "single_sample_files/vcfs")
 #> ℹ Found a total of 3 samples in the MAF file
 #>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
+#> 
+#> ✔ Successfullly saved 3 samples to  `<sample>.snv_indel.vcf` files in 'single_sample_files/vcfs'
+```
+
+### Converting cohort copynumber calls into single sample segment VCFs
+
+``` r
+path_copynumber <- system.file(package = "sigstart", "pcawg.3sample.copynumber.segment")
+convert_cohort_segment_file_to_single_samples(path_copynumber, outdir = "single_sample_files/cnvs")
+#> ℹ Found a total of 3 samples in the segment file '/private/var/folders/d9/x2yygv_13_15dw5f8fspdn880000gp/T/RtmpTLvGrT/temp_libpath7eb617c88faf/sigstart/pcawg.3sample.copynumber.segment'
+#>   |                                                                              |                                                                      |   0%  |                                                                              |=======================                                               |  33%  |                                                                              |===============================================                       |  67%  |                                                                              |======================================================================| 100%
+#> 
+#> ✔ Successfullly saved 3 samples to  `<sample>.copynumber.tsv` files in 'single_sample_files/cnvs'
 ```

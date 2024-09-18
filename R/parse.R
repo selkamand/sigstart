@@ -218,20 +218,42 @@ parse_purple_sv_vcf_to_sigminer <- function(vcf_sv, sample_id = "Sample", pass_o
 parse_purple_sv_vcf_to_sigprofiler <- parse_purple_sv_vcf_to_bedpe
 
 
-
 #' Parse CNVs to sigminer format
 #'
-#' @param segment path to segment file produced by purple (TUMOR.purple.cnv.somatic.tsv)
+#' Parse a single-sample copynumber segment file to sigminer compatible format.
+#' \strong{This function assumes your segment file is single-sample}.
+#' If you have a multi-sample copynumber file, see [convert_cohort_segment_file_to_single_samples()].
+#' If working from oncoanalyser outputs see [parse_purple_cnv_to_sigminer()].
+#'
+#' @param segment path to segment file
 #' @param sample_id string representing what the sample ID should be. Can be any valid string.
+#' @param col_chromosome column in segment file describing chromosome of the copynumber change
+#' @param col_start column in segment file describing start position of the copynumber change
+#' @param col_end column in segment file describing end position of the copynumber change
+#' @param col_copynumber column in segment file describing the total copynumber
+#' @param col_minor_cn column in segment file describing the copynumber of the minor allele
 #' @param exclude_sex_chromosomes drop sex chromosomes from dataframe output
-#' @return data.frame compatible with sigminer (containg the columns sample, chromosome, start, end, segVal, and minor_cn)
+#'
+#' @return data.frame compatible with sigminer (containg the columns sample, chromosome, start, end, segVal, and minor_cn), ready for reading with [sigminer::read_copynumber()]
+#'
 #' @export
 #'
-parse_purple_cnv_to_sigminer <- function(segment, sample_id = "Sample", exclude_sex_chromosomes = TRUE){
-
-  # Gendder
+#' @examples
+#' path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+#' parse_cnv_to_sigminer <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
+#'
+parse_cnv_to_sigminer <- function(segment,
+                                  sample_id = "Sample",
+                                  col_chromosome = "chromosome",
+                                  col_start = "start",
+                                  col_end = "end",
+                                  col_copynumber = "copyNumber",
+                                  col_minor_cn = "minorAlleleCopyNumber",
+                                  exclude_sex_chromosomes = TRUE
+                                  ){
+  # Gender
   if(!exclude_sex_chromosomes){
-   cli::cli_abort("We do not recommend including taking sex chromosomes into account when examining copynumber signatures. Please set {.arg exclude_sex_chromosomes} argument of sigstarts {.code parse_purple_cnv_to_sigminer()} function to TRUE to automatically filter them out")
+    cli::cli_abort("We do not recommend including taking sex chromosomes into account when examining copynumber signatures. Please set {.arg exclude_sex_chromosomes} argument of sigstarts {.code parse_purple_cnv_to_sigminer()} function to TRUE to automatically filter them out")
   }
   # Assertions
   assertions::assert_file_exists(segment)
@@ -239,17 +261,50 @@ parse_purple_cnv_to_sigminer <- function(segment, sample_id = "Sample", exclude_
 
   # Read File
   df_segment <- utils::read.csv(file = segment, header = TRUE, sep = "\t")
+  assertions::assert_names_include(df_segment, c(col_chromosome,col_start, col_end, col_copynumber,col_minor_cn))
 
   # Rename and Add Columns
-  df_segment <- rename(df_segment, c(Chromosome = "chromosome", modal_cn = "copyNumber", Start.bp = "start", End.bp = "end", minor_cn = "minorAlleleCopyNumber"))
+  df_segment <- rename(df_segment, c(Chromosome = col_chromosome, modal_cn = col_copynumber, Start.bp = col_start, End.bp = col_end, minor_cn = col_minor_cn))
   df_segment[["sample"]] <- sample_id
 
   # Select just the columns sigminer needs
   df_sigminer <- df_segment[c("sample", "Chromosome", "Start.bp", "End.bp", "modal_cn", "minor_cn")]
 
   if(exclude_sex_chromosomes){
-    df_sigminer <- df_sigminer[!is_sex_chromosome(df_sigminer$Chromosome), ]
+    df_sigminer <- df_sigminer[!is_sex_chromosome(df_sigminer$Chromosome),]
   }
+
+  return(df_sigminer)
+
+}
+
+#' Parse CNVs to sigminer format
+#'
+#' @inheritParams parse_cnv_to_sigminer
+#' @inherit parse_cnv_to_sigminer return description
+#'
+#' @examples
+#' path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+#' sigminer_cn_dataframe <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
+#'
+#' @export
+parse_purple_cnv_to_sigminer <- function(
+    segment,
+    sample_id = "Sample",
+    exclude_sex_chromosomes = TRUE
+    ){
+
+  # Call parse_cnv_to_sigminer with the expected column names for purple
+  df_sigminer <- parse_cnv_to_sigminer(
+    segment,
+    sample_id = sample_id,
+    col_chromosome = "chromosome",
+    col_start = "start",
+    col_end = "end",
+    col_copynumber = "copyNumber",
+    col_minor_cn = "minorAlleleCopyNumber",
+    exclude_sex_chromosomes = exclude_sex_chromosomes
+    )
 
   return(df_sigminer)
 }
