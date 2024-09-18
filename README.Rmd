@@ -34,7 +34,7 @@ devtools::install_github("selkamand/sigstart")
 
 ## Quick Start
 
-```{r example}
+```{r}
 library(sigstart)
 
 # Convert SNVs and Indels from a tumor-normal VCF -> MAF-like structure for sigminer
@@ -72,28 +72,45 @@ sigminer_cn_dataframe <- parse_cnv_to_sigminer(
 
 ## Cohort -> Single Sample Files
 
-Signature analysis tools including sigscreen and signal are easier to run from single sample data files. Here we demonstrate how to create the 
+Signature analysis tools including sigscreen and signal are easier to run from single sample data files. Here we demonstrate how to split common cohort/multisample filetypes into a collection of single-sample files.
+
+```{r remove_old_single_sample_dir, include=FALSE}
+unlink("single_sample_files", recursive = TRUE)
+```
+
 
 ### Converting cohort MAF to single sample VCFs
 
 Signature analysis tools including sigscreen and signal are easier to run from single sample VCFs than cohort-MAFs. The convert_maf_to_vcfs function splits a cohort MAF file into a collection of minimal single sample vcfs.
 
 ```{r}
-library(sigstart)
+# Split MAF into single sample VCFs
 path_maf <- system.file(package = "sigstart", "pcawg.3sample.snvs_indel.maf")
-convert_maf_to_vcfs(path_maf, outdir = "single_sample_files/vcfs")
+convert_maf_to_vcfs(
+  path_maf, 
+  outdir = "single_sample_files/vcfs", 
+  verbose = FALSE
+)
 
-# Parse the vcfs (no need to specify a sample ID since these are single sample VCFS)
-parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.bgz")
+# Parse the vcfs 
+# (no need to specify a sample ID since these are single sample VCFs)
+maf <- parse_vcf_to_sigminer_maf("single_sample_files/vcfs/DO1000.snv_indel.vcf.bgz")
+head(maf)
 ```
 
 ### Converting cohort copynumber calls into single sample segment VCFs
 
 ```{r}
+# Split cohort CNV segment files into single sample files 
 path_copynumber <- system.file(package = "sigstart", "pcawg.3sample.copynumber.segment")
-convert_cohort_segment_file_to_single_samples(path_copynumber, outdir = "single_sample_files/cnvs")
+convert_cohort_segment_file_to_single_samples(
+  path_copynumber, 
+  outdir = "single_sample_files/cnvs", 
+  verbose = FALSE
+)
 
 # Parse the copynumber file
-parse_cnv_to_sigminer("single_sample_files/cnvs/DO1000.copynumber.tsv.bgz", sample_id = "D01000")
+cnv <- parse_cnv_to_sigminer("single_sample_files/cnvs/DO1000.copynumber.tsv.bgz", sample_id = "D01000")
+head(cnv)
 ```
 
