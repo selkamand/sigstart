@@ -123,10 +123,12 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
 #' @param col_sample name of the column containing sample identifiers
 #' @param outdir Output directory where single-sample segment files will be saved (string).
 #' @param bgzip should segment files be bgzipped?
+#' @param rename_columns should the output file column names be changed to specifically default expectations of [parse_cnv_to_sigminer()].
+#' If TRUE, will also drop all column not specified by \strong{col_<propertyy>} arguments.
 #' @param verbose verbose mode (flag)
 #' @inheritParams parse_cnv_to_sigminer
 #'
-#' @return Invisibly returns NULL. Creates single sample copynumber segment files in the specified output directory.
+#' @return A vector with paths to each single sample copynumber segment file. Creates single sample copynumber segment files in the specified output directory.
 #' @export
 #'
 #' @examples
@@ -141,6 +143,7 @@ convert_cohort_segment_file_to_single_samples <- function(
     col_end = "end",
     col_copynumber = "copyNumber",
     col_minor_cn = "minorAlleleCopyNumber",
+    rename_columns = TRUE,
     outdir = "cnvs",
     bgzip = TRUE,
     verbose=TRUE
@@ -172,14 +175,28 @@ convert_cohort_segment_file_to_single_samples <- function(
   # Iterate over samples, writing data to individual files
   if(verbose) progress_bar = utils::txtProgressBar(min=0, max=nsamples, style = 3, char="=")
   i=0
+
+  ls_files <- list()
   for (sample in names(ls_segment)){
     i <- i + 1
     if(verbose) utils::setTxtProgressBar(progress_bar, value=i, title = NULL, label = NULL)
     outfile = paste0(outdir, "/", sample, ".copynumber.tsv")
+    ls_files[[sample]] <- outfile
     df_ss_segment <- ls_segment[[sample]]
     df_ss_segment[[col_sample]] <- NULL # drop sample column (sample encoded in filename)
-    utils::write.table(df_ss_segment, col.names = TRUE, row.names = FALSE, sep = "\t", file = outfile, append = FALSE, quote = FALSE)
 
+    # Rename (& select) Columns
+    if(rename_columns){
+      df_ss_segment <- sigshared::bselect(df_ss_segment, c(
+        "chromosome" = col_chromosome,
+        "start" = col_start,
+        "end" = col_end,
+        "copyNumber" = col_copynumber,
+        "minorAlleleCopyNumber" = col_minor_cn))
+    }
+
+    # Write To File
+    utils::write.table(df_ss_segment, col.names = TRUE, row.names = FALSE, sep = "\t", file = outfile, append = FALSE, quote = FALSE)
 
     # Compress with bgzip
     if(bgzip){
@@ -194,6 +211,6 @@ convert_cohort_segment_file_to_single_samples <- function(
     cli::cli_alert_success("Successfullly saved {nsamples} samples to  {.code <sample>.copynumber.tsv} files in {.path {outdir}}")
   }
 
-  # Invisibly return NULL
-  return(invisible(NULL))
+  # Files
+  return(unlist(ls_files))
 }

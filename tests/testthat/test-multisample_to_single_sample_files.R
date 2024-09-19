@@ -96,7 +96,8 @@ test_that("convert_cohort_segment_file_to_single_samples works correctly with va
     df_cnv <- expect_no_error(parse_cnv_to_sigminer(cnv_file, sample_id = sample_id))
 
     # Snapshot test: compare the CNV file to a stored snapshot
-    expect_snapshot_file(cnv_file, basename(cnv_file))
+    expect_true(file.exists(cnv_file), info = paste("File not found:", cnv_file))
+    expect_snapshot(read.delim(cnv_file, header = TRUE, sep = "\t"))
     expect_snapshot(df_cnv)
   }
 })

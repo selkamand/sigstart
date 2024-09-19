@@ -22,8 +22,10 @@ Imports:
     dplyr,
     plyranges,
     rlang,
+    sigshared (>= 0.0.0.9000),
     StructuralVariantAnnotation,
     VariantAnnotation,
     vcfR
-Remotes: 
-    CCICB/vcf2mafR
+Remotes:  
+    CCICB/vcf2mafR,
+    selkamand/sigshared
