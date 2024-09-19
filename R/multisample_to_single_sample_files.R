@@ -128,7 +128,7 @@ convert_maf_to_vcfs <- function(path, outdir = "vcfs",
 #' @param verbose verbose mode (flag)
 #' @inheritParams parse_cnv_to_sigminer
 #'
-#' @return A vector with paths to each single sample copynumber segment file. Creates single sample copynumber segment files in the specified output directory.
+#' @return Invisibly returns a vector of paths to each single sample copynumber segment file that was created.
 #' @export
 #'
 #' @examples
@@ -212,5 +212,5 @@ convert_cohort_segment_file_to_single_samples <- function(
   }
 
   # Files
-  return(unlist(ls_files))
+  return(invisible(unlist(ls_files)))
 }

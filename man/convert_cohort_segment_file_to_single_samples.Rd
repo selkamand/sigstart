@@ -43,7 +43,7 @@ If TRUE, will also drop all column not specified by \strong{col_\if{html}{\out{<
 \item{verbose}{verbose mode (flag)}
 }
 \value{
-A vector with paths to each single sample copynumber segment file. Creates single sample copynumber segment files in the specified output directory.
+Invisibly returns a vector of paths to each single sample copynumber segment file that was created.
 }
 \description{
 This function takes a path to a CNV describing segment files (TSV format) and

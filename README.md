@@ -10,6 +10,12 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 [![CRAN
 status](https://www.r-pkg.org/badges/version/sigstart)](https://CRAN.R-project.org/package=sigstart)
 [![R-CMD-check](https://github.com/selkamand/sigstart/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/selkamand/sigstart/actions/workflows/R-CMD-check.yaml)
+![GitHub Issues or Pull
+Requests](https://img.shields.io/github/issues-closed/selkamand/sigstart)
+[![code
+size](https://img.shields.io/github/languages/code-size/selkamand/sigstart.svg)](https://github.com/selkamand/sigstart)
+![GitHub last
+commit](https://img.shields.io/github/last-commit/selkamand/sigstart)
 <!-- badges: end -->
 
 **Sigstart** reads small variants, copy number changes, and structural
