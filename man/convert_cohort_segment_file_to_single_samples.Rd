@@ -12,6 +12,7 @@ convert_cohort_segment_file_to_single_samples(
   col_end = "end",
   col_copynumber = "copyNumber",
   col_minor_cn = "minorAlleleCopyNumber",
+  rename_columns = TRUE,
   outdir = "cnvs",
   bgzip = TRUE,
   verbose = TRUE
@@ -32,6 +33,9 @@ convert_cohort_segment_file_to_single_samples(
 
 \item{col_minor_cn}{column in segment file describing the copynumber of the minor allele}
 
+\item{rename_columns}{should the output file column names be changed to specifically default expectations of \code{\link[=parse_cnv_to_sigminer]{parse_cnv_to_sigminer()}}.
+If TRUE, will also drop all column not specified by \strong{col_\if{html}{\out{<propertyy>}}} arguments.}
+
 \item{outdir}{Output directory where single-sample segment files will be saved (string).}
 
 \item{bgzip}{should segment files be bgzipped?}
@@ -39,7 +43,7 @@ convert_cohort_segment_file_to_single_samples(
 \item{verbose}{verbose mode (flag)}
 }
 \value{
-Invisibly returns NULL. Creates single sample copynumber segment files in the specified output directory.
+A vector with paths to each single sample copynumber segment file. Creates single sample copynumber segment files in the specified output directory.
 }
 \description{
 This function takes a path to a CNV describing segment files (TSV format) and
