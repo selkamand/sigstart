@@ -215,6 +215,9 @@ parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, include = c("pass", "pass_stric
 #'
 parse_purple_sv_vcf_to_sigminer <- function(vcf_sv, sample_id = "Sample", include = c("pass", "pass_only", "all")){
 
+  # Arg matching
+  include <- rlang::arg_match(include)
+
   # Assertions
   assertions::assert_file_exists(vcf_sv)
   assertions::assert_string(sample_id)
