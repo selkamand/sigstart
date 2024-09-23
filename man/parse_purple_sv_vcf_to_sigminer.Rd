@@ -4,14 +4,23 @@
 \alias{parse_purple_sv_vcf_to_sigminer}
 \title{Convert Gridss/Purple VCFs to sigminer-compatible data.frame}
 \usage{
-parse_purple_sv_vcf_to_sigminer(vcf_sv, sample_id = "Sample", pass_only = TRUE)
+parse_purple_sv_vcf_to_sigminer(
+  vcf_sv,
+  sample_id = "Sample",
+  include = c("pass", "pass_only", "all")
+)
 }
 \arguments{
 \item{vcf_sv}{path to a vcf file produced by GRIDSS / PURPLE (purple SV VCFs are typically the better choice since those are produced post-gripss filtering)}
 
 \item{sample_id}{string representing what the sample ID should be. Can be any valid string.}
 
-\item{pass_only}{only return breakpoints where FILTER=PASS}
+\item{include}{Which variants to include in the final data.frame. Valid values include:
+\itemize{
+\item \strong{pass}: FILTER column is \code{PASS} or \code{.}.
+\item \strong{pass_strict}: FILTER column is \code{PASS}.
+\item \strong{all}: Include all variants in VCF regardless of FILTER status.
+}}
 }
 \value{
 data.frame of breakpoints in a sigminer compatible format "sample", "chr1", "start1", "end1", "chr2", "start2", "end2", "strand1", "strand2", "svclass"
