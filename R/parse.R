@@ -164,8 +164,7 @@ parse_vcf_to_sigminer_maf <- function(
 #' By default will only include PASS variants, which will exclude both PON and copy-number inferred breakpoints.
 #'
 #' @param vcf_sv path to a vcf file produced by GRIDSS / PURPLE (purple SV VCFs are typically the better choice since those are produced post-gripss filtering)
-#' @param pass_only only return breakpoints where FILTER=PASS
-#'
+#' @inheritParams parse_vcf_to_sigminer_maf
 #' @return data.frame of breakpoints in a sigminer compatible format "sample", "chr1", "start1", "end1", "chr2", "start2", "end2", "strand1", "strand2", "svclass"
 #' @export
 #'
@@ -173,15 +172,23 @@ parse_vcf_to_sigminer_maf <- function(
 #' path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
 #' parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
 #'
-parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, pass_only = TRUE){
+parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, include = c("pass", "pass_strict", "all")){
+  include <- rlang::arg_match(include)
+
   assertions::assert_file_exists(vcf_sv)
 
   vcf = VariantAnnotation::readVcf(vcf_sv)
 
   # Export breakpoints to BEDPE
   bpgr = StructuralVariantAnnotation::breakpointRanges(vcf)
-  if(pass_only) {
+  if(include == "pass_strict") {
     bpgr <- plyranges::filter(bpgr, FILTER == "PASS")
+  }
+  else if(include == "pass"){ # Allow PASS or missing
+    bpgr <- plyranges::filter(bpgr, FILTER %in% c("PASS", "."))
+  }
+  else if(include == "all"){
+     #"Include all variants"
   }
 
   bedpe <- StructuralVariantAnnotation::breakpointgr2bedpe(bpgr)
@@ -197,7 +204,7 @@ parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, pass_only = TRUE){
 #'
 #' @param vcf_sv path to a vcf file produced by GRIDSS / PURPLE (purple SV VCFs are typically the better choice since those are produced post-gripss filtering)
 #' @param sample_id string representing what the sample ID should be. Can be any valid string.
-#' @param pass_only only return breakpoints where FILTER=PASS
+#' @inheritParams parse_vcf_to_sigminer_maf
 #'
 #' @return data.frame of breakpoints in a sigminer compatible format "sample", "chr1", "start1", "end1", "chr2", "start2", "end2", "strand1", "strand2", "svclass"
 #' @export
@@ -206,14 +213,17 @@ parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, pass_only = TRUE){
 #' path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
 #' parse_purple_sv_vcf_to_sigminer(path_vcf_sv)
 #'
-parse_purple_sv_vcf_to_sigminer <- function(vcf_sv, sample_id = "Sample", pass_only = TRUE){
+parse_purple_sv_vcf_to_sigminer <- function(vcf_sv, sample_id = "Sample", include = c("pass", "pass_only", "all")){
+
+  # Arg matching
+  include <- rlang::arg_match(include)
 
   # Assertions
   assertions::assert_file_exists(vcf_sv)
   assertions::assert_string(sample_id)
 
   # Get Just the breakpoints
-  bedpe <- parse_purple_sv_vcf_to_bedpe(vcf_sv, pass_only = pass_only)
+  bedpe <- parse_purple_sv_vcf_to_bedpe(vcf_sv, include = include)
   bedpe[["Sample"]] <- sample_id
   subset(bedpe, select=-c(name, score))
   sigminer <- relocate(bedpe, "Sample")
