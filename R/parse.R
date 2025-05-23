@@ -195,6 +195,28 @@ parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, include = c("pass", "pass_stric
   return(bedpe)
 }
 
+#' TSV to MAF
+#'
+#' Convert a tabular file to a minimal MAF for signature analysis
+#'
+#' @param file path to tsv file describing variants
+#' @param col_sample name of column containing sample ID
+#' @param col_chrom  name of column containing chromosome
+#' @param col_position name of column containing position
+#' @param col_ref name of column describing ref allele
+#' @param col_alt name of column describing alt allele
+#' @param sep column delimiter
+#'
+#' @returns a maf-like minimal dataframe that can be parsed by [sigminer::read_maf_minimal()]
+#' @export
+#'
+parse_tsv_to_sigminer_maf <- function(file, col_sample, col_chrom, col_position, col_ref, col_alt, sep = "\t"){
+  assertions::assert_file_exists(file)
+
+  df_tsv <- read.csv(file, header = TRUE, sep = sep)
+  df2maf_minimal(df_tsv, ref_genome = NA, col_chrom = col_chrom, col_sample_identifier = col_sample, col_pos = col_position, col_ref = col_ref, col_alt = col_alt)
+}
+
 
 #' Convert Gridss/Purple VCFs to sigminer-compatible data.frame
 #'
