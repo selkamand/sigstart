@@ -156,6 +156,37 @@ test_that("parse_tsv_to_sigminer_maf accepts alternate column names", {
   expect_true(all(c("Tumor_Sample_Barcode", "Chromosome", "Start_Position") %in% colnames(maf_alt)))
 })
 
+test_that("parse_tsv_to_sigminer_maf uses supplied sample_id for all rows", {
+  # build an in-memory TSV without any Sample column
+  df_input <- data.frame(
+    Chromosome = c("chr1", "chr2", "chr3"),
+    Position   = c(101, 202, 303),
+    Ref        = c("G", "T", "A"),
+    Alt        = c("A", "C", "G"),
+    stringsAsFactors = FALSE
+  )
+
+  # write to a temp file
+  tf <- withr::local_tempfile(fileext = ".tsv")
+  write.table(df_input, tf, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  # parse with explicit sample_id
+  maf <- parse_tsv_to_sigminer_maf(tf, sample_id = "MANUAL_ID", verbose = FALSE)
+
+  # should be a data.frame of same length
+  expect_s3_class(maf, "data.frame")
+  expect_equal(nrow(maf), nrow(df_input))
+
+  # and all Tumor_Sample_Barcode values should equal the supplied ID
+  expect_true("Tumor_Sample_Barcode" %in% colnames(maf))
+  expect_equal(unique(maf$Tumor_Sample_Barcode), "MANUAL_ID")
+
+  # other fields round-trip correctly
+  expect_equal(sort(unique(maf$Chromosome)), sort(df_input$Chromosome))
+  expect_equal(sort(unique(maf$Start_Position)), sort(df_input$Position))
+})
+
+
 test_that("parse_purple_sv_vcf_to_bedpe works correctly", {
   path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
 
@@ -208,7 +239,7 @@ test_that("parse_purple_cnv_to_sigminer & parse_cnv_to_sigminer work the same", 
   # parse_cnv_to_sigminer is a generalised version of parse_purple_cnv_to_sigminer
   # that lets users specify column name mappings and therefore read in any filetype
   # but the default column names are set up for purple
-  path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+  path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 
   sample_id = "bobby"
   sigminer_purple_cnv <- expect_no_error(parse_purple_cnv_to_sigminer(path_cn, sample_id = sample_id))

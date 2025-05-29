@@ -1,0 +1,7 @@
+Chromosome	Position	Ref	Alt	Sample
+1	12345	A	T	Sample_A
+2	23456	C	G	Sample_A
+X	34567	T	C	Sample_A
+12	104	A	C	Sample_B
+12	203	A	ATATA	Sample_B
+12	304	G	A	Sample_B

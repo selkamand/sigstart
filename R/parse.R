@@ -19,7 +19,7 @@ utils::globalVariables(c("Alt_Length", "FILTER", "Position_1based", "Ref_Length"
 #'     \item \strong{pass_strict}: FILTER column is `PASS`.
 #'     \item \strong{all}: Include all variants in VCF regardless of FILTER status.
 #'   }
-#' @param sample_id  string representing the tumour sample identifier should be.
+#' @param sample_id  string representing the tumour sample identifier.
 #' This is required if you supply a 2-sample tumour normal VCF.
 #' Must be one of the samples described in the VCF.
 #' @param allow_multisample Do NOT throw an error for VCFs with >2 samples.
@@ -163,27 +163,32 @@ parse_vcf_to_sigminer_maf <- function(
 #' Convert a tabular file to a minimal MAF for signature analysis
 #'
 #' @param file path to tsv file describing variants. Must contain columns Sample, Chromosome, Position, Ref, Alt. Position should be 1-based.
-#' If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found
+#' If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found. When working with single-sample data with no Sample column, supply the sample_id argument.
 #' @param sep column delimiter (defaults to tab)
 #' @param verbose verbose mode (flag)
 #' @param ref_genome when converting to MAF, what to add as the ref genome field (string)
+#' @param sample_id  string representing the tumour sample identifier. When NULL, will automatically search TSV for a 'Sample' column. When supplied, will artificially create a 'Sample' column and set all values to \code{sample_id}. Useful if working on single-sample mutation data with no sample column. (string)
 #' @returns a maf-like minimal dataframe that can be parsed by [sigminer::read_maf_minimal()]
 #' @export
 #'
 #' @examples
 #'
 #' # Define path to TSV file describing mutations
-#' path_tsv <- system.file("chromposrefalt.tsv", package = "sigstart")
+#' path_tsv <- system.file("snvs_indels.tsv", package = "sigstart")
 #'
 #' # Parse to MAF-like dataframe
-#' maf <- parse_tsv_to_sigminer_maf(path_tsv, verbose = FALSE)
+#' maf <- parse_tsv_to_sigminer_maf(path_tsv)
 #'
 #' # Inspect MAF
 #' head(maf)
 #'
-parse_tsv_to_sigminer_maf <- function(file, ref_genome = "uncertain", sep = "\t", verbose = FALSE){
+#' # If TSV contains describes a single sample and includes no sample column
+#' # directly supply sample identifier using sample_id argument
+#' path_tsv_single_sample <- system.file("snvs_indels.singlesample.tsv", package = "sigstart")
+#' maf <- parse_tsv_to_sigminer_maf(path_tsv_single_sample, sample_id = "Sample A")
+#'
+parse_tsv_to_sigminer_maf <- function(file, ref_genome = "uncertain", sep = "\t", sample_id = NULL, verbose = FALSE){
   assertions::assert_file_exists(file)
-
 
   df_tsv <- utils::read.csv(file, header = TRUE, sep = sep)
 
@@ -193,16 +198,32 @@ parse_tsv_to_sigminer_maf <- function(file, ref_genome = "uncertain", sep = "\t"
   col_pos <- identify_matching_in_order(observed_column_names, patterns = c("^position$", "^pos$", "^start_position$"))
   col_ref <- identify_matching_in_order(observed_column_names, patterns = c("^ref$", "^reference$", "^reference_allele"))
   col_alt <- identify_matching_in_order(observed_column_names, patterns = c("^alt$", "^alternative_alleles?$", "^alt_alleles?", "tumor_seq_allele2"))
-  col_sample <- identify_matching_in_order(observed_column_names, patterns = c("^sample$", "^sample_id$", "^tumou?r_sample_barcode$"))
+
 
   assertions::assert_no_missing(col_chrom, msg = "Could not find required column: [Chromosome] in file {.path {file}}. Please add column and retry")
   assertions::assert_no_missing(col_pos, msg = "Could not find required column: [Position] in file {.path {file}}. Please add column and retry")
   assertions::assert_no_missing(col_ref, msg = "Could not find required column: [Ref] in file {.path {file}}. Please add column and retry")
   assertions::assert_no_missing(col_alt, msg = "Could not find required column: [Alt] in file {.path {file}}. Please add column and retry")
-  assertions::assert_no_missing(col_sample, msg = "Could not find required column: [Sample] in file {.path {file}}. Please add column and retry")
 
-  if(verbose){
-    cli::cli_alert_success("Required headers found [chromosome: {col_chrom}, sample: {col_sample}, position: {col_pos}, ref: {col_ref}, alt: {col_alt}]")
+  if(is.null(sample_id)){
+    # If no sample_id has been supplied, search TSV for columns that might contain sampleIDs
+    col_sample <- identify_matching_in_order(observed_column_names, patterns = c("^sample$", "^sample_id$", "^tumou?r_sample_barcode$"))
+    assertions::assert_no_missing(col_sample, msg = "Could not find required column: [Sample] in file {.path {file}}. Please add column and retry OR if file describes a single sample, use {.code sample_id} argument to manually set sample identifier")
+
+    if(verbose){
+      cli::cli_alert_success("Required headers found [chromosome: {col_chrom}, sample: {col_sample}, position: {col_pos}, ref: {col_ref}, alt: {col_alt}]")
+    }
+  }
+  else{
+    # If sample_id has been supplied, create a new 'Sample'  column where all values = sample_id
+    assertions::assert_string(sample_id)
+    df_tsv[["Sample"]] <- sample_id
+    col_sample = "Sample"
+
+    if(verbose){
+      cli::cli_alert_success("Required headers found [chromosome: {col_chrom}, position: {col_pos}, ref: {col_ref}, alt: {col_alt}]")
+      cli::cli_alert_info("Manually creating Tumor_Sample_Barcode column and setting to '{sample_id}'")
+    }
   }
 
   # Convert to MAF

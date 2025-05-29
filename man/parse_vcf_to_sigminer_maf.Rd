@@ -15,7 +15,7 @@ parse_vcf_to_sigminer_maf(
 \arguments{
 \item{vcf_snv}{A character string specifying the path to the VCF file.}
 
-\item{sample_id}{string representing the tumour sample identifier should be.
+\item{sample_id}{string representing the tumour sample identifier.
 This is required if you supply a 2-sample tumour normal VCF.
 Must be one of the samples described in the VCF.}
 
