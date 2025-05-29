@@ -21,7 +21,6 @@
 #' @param col_ref name of column describing the reference allele (string)
 #' @param col_alt name of column describing the alternate allele (string)
 #' @param col_sample_identifier name of column describing the sample containing the mutation (string)
-#' @param col_gene name of column containing Hugo_Symbol of the gene affected by the mutation (string)
 #' @param col_entrez_gene_id name of column containing entrez gene IDs (string)
 #' @param col_center name of column containing the genome sequencing center reporting the variant (string)
 #' @param col_dbSNP_rsid name of column describing the dbSNP rsid of the variant, or "novel" if there is no dbSNP record (string)
@@ -29,20 +28,11 @@
 #' @param col_matched_normal_sample_identifier name of column describing the matched normal sample identifier
 #' @param col_sequencer name of column describing the instrument used to produce data (string)
 #' @param col_sequence_source name of column describing the molecular assay type used to produce the analytes used for sequencing (string). Elements are usually one of 'WGS', 'WGA', 'WXS', 'RNA-seq', etc
-#' @param col_mutation_status name of column describing the mutation status (string). Elements must be one of: None, Germline, Somatic, LOH, Post-transcriptional modification, or Unknown
-#' @param consequence_dictionary What dictionary is to describe variant consequences (SO / PAVE / etc)
 #' @param missing_to_silent Assyne any missing (NA) or empty ('') consequences are 'Silent' mutations
 #' @param verbose verbose (flag)
 #' @return a maf-like data.frame (data.table)
 #'
-#' @examples
-#'
-#' # Start with a vcf/maf-like 'chr-pos-ref-alt-consequence-sample' data.frame
-#' df = read.csv(system.file(package = "vcf2mafR", "testfiles/test_so.tsv"), sep = "\t")
-#'
-#' # Convert to a MAF dataframe
-#' df2maf(df, ref_genome = "hg38")
-#'
+#' @keywords internal
 df2maf_minimal <- function(data,
                            ref_genome,
                            keep_all = TRUE,
@@ -76,7 +66,6 @@ df2maf_minimal <- function(data,
 
   old_names <- c(col_chrom, col_pos, col_sample_identifier, col_ref, col_alt)
   new_names <- c("Chromosome", "Position_1based", "Tumor_Sample_Barcode", "Reference_Allele", "Tumor_Seq_Allele2")
-  consequence_dictionary <- rlang::arg_match(consequence_dictionary)
 
   # Eliminate no visible global binding
   Reference_Allele <- NULL
@@ -237,8 +226,8 @@ df2maf_minimal <- function(data,
   colname_order <- colname_order[colname_order %in% colnames(dt_maf)]
   data.table::setcolorder(dt_maf, neworder = colname_order)
 
-  # Return
-  return(dt_maf)
+  # Return (Square braces just assure printing https://stackoverflow.com/questions/64337343/why-data-table-is-not-being-printed-sometimes-in-console-in-rstudio)
+  return(dt_maf[])
 }
 
 # Changing Ref:
@@ -297,8 +286,7 @@ fix_alleles <- function(ref, alt) {
 #' @return Names of each  GDC MAF column in the order they appear (character)
 #'
 #'
-#' @examples
-#' valid_maf_columns()
+#' @keywords internal
 #'
 valid_maf_columns <- function(){
   c(

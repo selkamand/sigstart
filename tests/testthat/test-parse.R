@@ -76,6 +76,86 @@ test_that("parse_vcf_to_sigminer_maf works correctly with tumor_normal_rna sampl
   expect_snapshot(df_maf)
 })
 
+test_that("parse_tsv_to_sigminer_maf parses a well-formed TSV correctly", {
+  # create a minimal in-memory TSV
+  df_input <- data.frame(
+    Chromosome = c("1", "2", "X"),
+    Position   = c(12345, 23456, 34567),
+    Ref        = c("A", "C", "T"),
+    Alt        = c("T", "G", "C"),
+    Sample     = c("Sample_A", "Sample_B", "Sample_C"),
+    stringsAsFactors = FALSE
+  )
+
+  tf <- withr::local_tempfile(fileext = ".tsv")
+  write.table(df_input, tf, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  maf <- parse_tsv_to_sigminer_maf(tf, verbose = FALSE)
+
+  # basic structure
+  expect_s3_class(maf, "data.frame")
+  expect_true(nrow(maf) == nrow(df_input))
+
+  # check that columns got renamed/mapped as expected by df2maf_minimal()
+  # (adjust these to your actual output column names)
+  expected_cols <- c(
+    "Tumor_Sample_Barcode",
+    "Chromosome",
+    "Start_Position",
+    "Reference_Allele",
+    "Tumor_Seq_Allele2"
+  )
+  expect_true(all(expected_cols %in% colnames(maf)))
+
+  # check values round-trip
+  expect_equal(
+    sort(unique(maf$Tumor_Sample_Barcode)),
+    sort(df_input$Sample)
+  )
+  expect_equal(
+    sort(unique(as.character(maf$Chromosome))),
+    sort(df_input$Chromosome)
+  )
+  expect_equal(
+    sort(unique(maf$Start_Position)),
+    sort(df_input$Position)
+  )
+})
+
+test_that("parse_tsv_to_sigminer_maf errors on missing required columns", {
+  df_bad <- data.frame(
+    Chromosome = c("1", "2"),  # missing Position, Ref, Alt, Sample
+    stringsAsFactors = FALSE
+  )
+  tf_bad <- withr::local_tempfile(fileext = ".tsv")
+  write.table(df_bad, tf_bad, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  expect_error(
+    parse_tsv_to_sigminer_maf(tf_bad, verbose = FALSE),
+    regexp = "Could not find required column"
+  )
+})
+
+test_that("parse_tsv_to_sigminer_maf accepts alternate column names", {
+  df_alt <- data.frame(
+    chrom      = c("1", "2"),
+    pos        = c(111, 222),
+    reference  = c("G", "T"),
+    alt_alleles = c("A", "C"),
+    sample_id  = c("S1", "S2"),
+    stringsAsFactors = FALSE
+  )
+
+  tf_alt <- withr::local_tempfile(fileext = ".tsv")
+  write.table(df_alt, tf_alt, sep = "\t", row.names = FALSE, quote = FALSE)
+
+  maf_alt <- parse_tsv_to_sigminer_maf(tf_alt, verbose = FALSE)
+
+  # should still map and produce the same minimal MAF structure
+  expect_s3_class(maf_alt, "data.frame")
+  expect_true(all(c("Tumor_Sample_Barcode", "Chromosome", "Start_Position") %in% colnames(maf_alt)))
+})
+
 test_that("parse_purple_sv_vcf_to_bedpe works correctly", {
   path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
 
@@ -104,7 +184,7 @@ test_that("parse_purple_sv_vcf_to_sigminer works correctly", {
 
 
 test_that("parse_purple_cnv_to_sigminer works correctly", {
-  path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+  path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 
   sample_id = "bobby"
   expect_error(parse_purple_cnv_to_sigminer(path_cn, sample_id = sample_id), NA)

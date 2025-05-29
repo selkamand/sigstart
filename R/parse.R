@@ -38,7 +38,7 @@ parse_vcf_to_sigminer_maf <- function(
     sample_id = NULL,
     include = c("pass", "pass_strict", "all"),
     allow_multisample = FALSE,
-    verbose = TRUE
+    verbose = FALSE
   ){
   assertions::assert_file_exists(vcf_snv)
   include <- rlang::arg_match(include)
@@ -154,8 +154,75 @@ parse_vcf_to_sigminer_maf <- function(
     assertions::assert(n_hom_ref_variants == 0, msg = "Resulting MAF includes [{n_hom_ref_variants}] variants whose genotype are 0/0 (homozygous ref). Are you sure you've supplied an appropriate VCF file and {.arg sample_id} is truly a tumour sample?")
   }
 
-  return(dt_maf)
+  # Braces ensure print on next output to console
+  return(dt_maf[])
 }
+
+#' TSV to MAF
+#'
+#' Convert a tabular file to a minimal MAF for signature analysis
+#'
+#' @param file path to tsv file describing variants. Must contain columns Sample, Chromosome, Position, Ref, Alt. Position should be 1-based.
+#' If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found
+#' @param sep column delimiter (defaults to tab)
+#' @param verbose verbose mode (flag)
+#' @param ref_genome when converting to MAF, what to add as the ref genome field (string)
+#' @returns a maf-like minimal dataframe that can be parsed by [sigminer::read_maf_minimal()]
+#' @export
+#'
+#' @examples
+#'
+#' # Define path to TSV file describing mutations
+#' path_tsv <- system.file("chromposrefalt.tsv", package = "sigstart")
+#'
+#' # Parse to MAF-like dataframe
+#' maf <- parse_tsv_to_sigminer_maf(path_tsv, verbose = FALSE)
+#'
+#' # Inspect MAF
+#' head(maf)
+#'
+parse_tsv_to_sigminer_maf <- function(file, ref_genome = "uncertain", sep = "\t", verbose = FALSE){
+  assertions::assert_file_exists(file)
+
+
+  df_tsv <- utils::read.csv(file, header = TRUE, sep = sep)
+
+  observed_column_names <- colnames(df_tsv)
+
+  col_chrom <- identify_matching_in_order(observed_column_names, patterns = c("^chromosome$", "^chrom$", "^#chrom"))
+  col_pos <- identify_matching_in_order(observed_column_names, patterns = c("^position$", "^pos$", "^start_position$"))
+  col_ref <- identify_matching_in_order(observed_column_names, patterns = c("^ref$", "^reference$", "^reference_allele"))
+  col_alt <- identify_matching_in_order(observed_column_names, patterns = c("^alt$", "^alternative_alleles?$", "^alt_alleles?", "tumor_seq_allele2"))
+  col_sample <- identify_matching_in_order(observed_column_names, patterns = c("^sample$", "^sample_id$", "^tumou?r_sample_barcode$"))
+
+  assertions::assert_no_missing(col_chrom, msg = "Could not find required column: [Chromosome] in file {.path {file}}. Please add column and retry")
+  assertions::assert_no_missing(col_pos, msg = "Could not find required column: [Position] in file {.path {file}}. Please add column and retry")
+  assertions::assert_no_missing(col_ref, msg = "Could not find required column: [Ref] in file {.path {file}}. Please add column and retry")
+  assertions::assert_no_missing(col_alt, msg = "Could not find required column: [Alt] in file {.path {file}}. Please add column and retry")
+  assertions::assert_no_missing(col_sample, msg = "Could not find required column: [Sample] in file {.path {file}}. Please add column and retry")
+
+  if(verbose){
+    cli::cli_alert_success("Required headers found [chromosome: {col_chrom}, sample: {col_sample}, position: {col_pos}, ref: {col_ref}, alt: {col_alt}]")
+  }
+
+  # Convert to MAF
+  df_maf <- df2maf_minimal(df_tsv, ref_genome = ref_genome, col_chrom = col_chrom, col_sample_identifier = col_sample, col_pos = col_pos, col_ref = col_ref, col_alt = col_alt)
+
+  # Return MAF
+  return(df_maf)
+}
+
+# Searches char vector for each regex pattern patterns vector until it finds a hit. Returns value of hit
+identify_matching_in_order <- function(char, patterns, ignore.case=TRUE, perl=TRUE){
+
+  for (pattern in patterns) {
+    value_hit = grep(x = char, value = TRUE, pattern = pattern, ignore.case = ignore.case, perl = perl)[1]
+    if(!is.na(value_hit)) return(value_hit)
+  }
+
+  return(NA)
+}
+
 
 #' Convert Gridss/Purple VCFs to BEDPE format
 #'
@@ -195,27 +262,6 @@ parse_purple_sv_vcf_to_bedpe <- function(vcf_sv, include = c("pass", "pass_stric
   return(bedpe)
 }
 
-#' TSV to MAF
-#'
-#' Convert a tabular file to a minimal MAF for signature analysis
-#'
-#' @param file path to tsv file describing variants
-#' @param col_sample name of column containing sample ID
-#' @param col_chrom  name of column containing chromosome
-#' @param col_position name of column containing position
-#' @param col_ref name of column describing ref allele
-#' @param col_alt name of column describing alt allele
-#' @param sep column delimiter
-#'
-#' @returns a maf-like minimal dataframe that can be parsed by [sigminer::read_maf_minimal()]
-#' @export
-#'
-parse_tsv_to_sigminer_maf <- function(file, col_sample, col_chrom, col_position, col_ref, col_alt, sep = "\t"){
-  assertions::assert_file_exists(file)
-
-  df_tsv <- read.csv(file, header = TRUE, sep = sep)
-  df2maf_minimal(df_tsv, ref_genome = NA, col_chrom = col_chrom, col_sample_identifier = col_sample, col_pos = col_position, col_ref = col_ref, col_alt = col_alt)
-}
 
 
 #' Convert Gridss/Purple VCFs to sigminer-compatible data.frame
@@ -290,7 +336,7 @@ parse_purple_sv_vcf_to_sigprofiler <- parse_purple_sv_vcf_to_bedpe
 #' @export
 #'
 #' @examples
-#' path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+#' path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 #' parse_cnv_to_sigminer <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
 #'
 parse_cnv_to_sigminer <- function(segment,
@@ -335,7 +381,7 @@ parse_cnv_to_sigminer <- function(segment,
 #' @inherit parse_cnv_to_sigminer return description
 #'
 #' @examples
-#' path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+#' path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 #' sigminer_cn_dataframe <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
 #'
 #' @export

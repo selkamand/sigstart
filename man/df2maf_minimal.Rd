@@ -58,12 +58,6 @@ df2maf_minimal(
 \item{col_sequence_source}{name of column describing the molecular assay type used to produce the analytes used for sequencing (string). Elements are usually one of 'WGS', 'WGA', 'WXS', 'RNA-seq', etc}
 
 \item{verbose}{verbose (flag)}
-
-\item{col_gene}{name of column containing Hugo_Symbol of the gene affected by the mutation (string)}
-
-\item{col_mutation_status}{name of column describing the mutation status (string). Elements must be one of: None, Germline, Somatic, LOH, Post-transcriptional modification, or Unknown}
-
-\item{consequence_dictionary}{What dictionary is to describe variant consequences (SO / PAVE / etc)}
 }
 \value{
 a maf-like data.frame (data.table)
@@ -84,12 +78,4 @@ Converts a VEP-like (chr-pos-ref-alt-consequence-sample style) dataframe with to
 \details{
 Alternate column names can be used, but require \strong{col_chrom}, \strong{col_pos}, \strong{col_\if{html}{\out{<etc>}}} arguments to be supplied.
 }
-\examples{
-
-# Start with a vcf/maf-like 'chr-pos-ref-alt-consequence-sample' data.frame
-df = read.csv(system.file(package = "vcf2mafR", "testfiles/test_so.tsv"), sep = "\t")
-
-# Convert to a MAF dataframe
-df2maf(df, ref_genome = "hg38")
-
-}
+\keyword{internal}

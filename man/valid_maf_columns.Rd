@@ -12,7 +12,4 @@ Names of each  GDC MAF column in the order they appear (character)
 \description{
 List all valid MAF columns based on GDC specification
 }
-\examples{
-valid_maf_columns()
-
-}
+\keyword{internal}
