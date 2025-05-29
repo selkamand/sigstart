@@ -8,16 +8,19 @@ parse_tsv_to_sigminer_maf(
   file,
   ref_genome = "uncertain",
   sep = "\\t",
+  sample_id = NULL,
   verbose = FALSE
 )
 }
 \arguments{
 \item{file}{path to tsv file describing variants. Must contain columns Sample, Chromosome, Position, Ref, Alt. Position should be 1-based.
-If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found}
+If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found. When working with single-sample data with no Sample column, supply the sample_id argument.}
 
 \item{ref_genome}{when converting to MAF, what to add as the ref genome field (string)}
 
 \item{sep}{column delimiter (defaults to tab)}
+
+\item{sample_id}{string representing the tumour sample identifier. When NULL, will automatically search TSV for a 'Sample' column. When supplied, will artificially create a 'Sample' column and set all values to \code{sample_id}. Useful if working on single-sample mutation data with no sample column. (string)}
 
 \item{verbose}{verbose mode (flag)}
 }
@@ -30,12 +33,17 @@ Convert a tabular file to a minimal MAF for signature analysis
 \examples{
 
 # Define path to TSV file describing mutations
-path_tsv <- system.file("chromposrefalt.tsv", package = "sigstart")
+path_tsv <- system.file("snvs_indels.tsv", package = "sigstart")
 
 # Parse to MAF-like dataframe
-maf <- parse_tsv_to_sigminer_maf(path_tsv, verbose = FALSE)
+maf <- parse_tsv_to_sigminer_maf(path_tsv)
 
 # Inspect MAF
 head(maf)
+
+# If TSV contains describes a single sample and includes no sample column
+# directly supply sample identifier using sample_id argument
+path_tsv_single_sample <- system.file("snvs_indels.singlesample.tsv", package = "sigstart")
+maf <- parse_tsv_to_sigminer_maf(path_tsv_single_sample, sample_id = "Sample A")
 
 }
