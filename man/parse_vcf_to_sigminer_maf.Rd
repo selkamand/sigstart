@@ -9,7 +9,7 @@ parse_vcf_to_sigminer_maf(
   sample_id = NULL,
   include = c("pass", "pass_strict", "all"),
   allow_multisample = FALSE,
-  verbose = TRUE
+  verbose = FALSE
 )
 }
 \arguments{

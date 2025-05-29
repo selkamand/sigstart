@@ -38,14 +38,13 @@ devtools::install_github("selkamand/sigstart")
 ``` r
 library(sigstart)
 
-# Convert SNVs and Indels from a tumor-normal VCF -> MAF-like structure for sigminer
+# Convert SNVs and Indels from a tumor-normal VCF -> MAF-like dataframe for sigminer
 path_vcf_snv <- system.file("tumor_normal.purple.somatic.vcf.gz",package = "sigstart")
 sigminer_maf_like_dataframe <- parse_vcf_to_sigminer_maf(path_vcf_snv, sample_id = "tumor_sample")
-#> ℹ Found 2 samples described in the VCF [normal_sample and tumor_sample]
-#> ℹ Returning data for only sample [tumor_sample] samples in format column of VCF.
-```
 
-``` r
+# Convert SNVs and INDELs from sample-chrom-pos-ref-alt TSV file to a MAF-like dataframe (pos must )
+path_tsv <- system.file("chromposrefalt.tsv", package = "sigstart")
+sigminer_maf_like_dataframe <- parse_tsv_to_sigminer_maf(path_tsv, verbose = FALSE)
 
 # Convert Purple SVs from VCF -> BEDPE-like structure for sigminer
 path_vcf_sv <- system.file("tumor_sample.purple.sv.vcf", package = "sigstart")
@@ -58,10 +57,10 @@ bedpe_dataframe <- parse_purple_sv_vcf_to_sigprofiler(path_vcf_sv)
 bedpe_dataframe <- parse_purple_sv_vcf_to_bedpe(path_vcf_sv)
 
 # Convert Purple CN Segment File -> Sigminer 
-path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 sigminer_cn_dataframe <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
 
-# Convert CN Segment Files from other tools -> Sigminer
+# Convert CN Segment files from other tools -> Sigminer
 # (by manually specifying the column name mappings)
 path_cn_notpurple <- system.file("pcawg.single_sample.copynumber.notpurple.segment", package = "sigstart")
 sigminer_cn_dataframe <- parse_cnv_to_sigminer(

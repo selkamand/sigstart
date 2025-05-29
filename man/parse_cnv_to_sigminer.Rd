@@ -42,7 +42,7 @@ If you have a multi-sample copynumber file, see \code{\link[=convert_cohort_segm
 If working from oncoanalyser outputs see \code{\link[=parse_purple_cnv_to_sigminer]{parse_purple_cnv_to_sigminer()}}.
 }
 \examples{
-path_cn <- system.file("COLO829v003T.purple.cnv.somatic.tsv", package = "sigstart")
+path_cn <- system.file("purple.cnv.somatic.tsv", package = "sigstart")
 parse_cnv_to_sigminer <- parse_purple_cnv_to_sigminer(path_cn, sample_id = "tumor_sample")
 
 }

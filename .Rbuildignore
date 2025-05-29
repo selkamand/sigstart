@@ -4,6 +4,6 @@
 ^README\.Rmd$
 ^cran-comments\.md$
 ^\.github$
-^single_sample_files$
+^single_sample_files(/.*)?$
 ^vcfs$
 COLO829v003T.purple.somatic.vcf.gz

@@ -6,32 +6,36 @@
 \usage{
 parse_tsv_to_sigminer_maf(
   file,
-  col_sample,
-  col_chrom,
-  col_position,
-  col_ref,
-  col_alt,
-  sep = "\\t"
+  ref_genome = "uncertain",
+  sep = "\\t",
+  verbose = FALSE
 )
 }
 \arguments{
-\item{file}{path to tsv file describing variants}
+\item{file}{path to tsv file describing variants. Must contain columns Sample, Chromosome, Position, Ref, Alt. Position should be 1-based.
+If any of these columnames is missing column names will be searched for appropriate alternate names and error if none are found}
 
-\item{col_sample}{name of column containing sample ID}
+\item{ref_genome}{when converting to MAF, what to add as the ref genome field (string)}
 
-\item{col_chrom}{name of column containing chromosome}
+\item{sep}{column delimiter (defaults to tab)}
 
-\item{col_position}{name of column containing position}
-
-\item{col_ref}{name of column describing ref allele}
-
-\item{col_alt}{name of column describing alt allele}
-
-\item{sep}{column delimiter}
+\item{verbose}{verbose mode (flag)}
 }
 \value{
 a maf-like minimal dataframe that can be parsed by \code{\link[sigminer:read_maf]{sigminer::read_maf_minimal()}}
 }
 \description{
 Convert a tabular file to a minimal MAF for signature analysis
+}
+\examples{
+
+# Define path to TSV file describing mutations
+path_tsv <- system.file("chromposrefalt.tsv", package = "sigstart")
+
+# Parse to MAF-like dataframe
+maf <- parse_tsv_to_sigminer_maf(path_tsv, verbose = FALSE)
+
+# Inspect MAF
+head(maf)
+
 }
